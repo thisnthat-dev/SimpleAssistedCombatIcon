@@ -1004,7 +1004,7 @@ function addon:SetupOptions()
                         end,
                         disabled = function() return not ConsolePort end,
                         order = 2,
-                        width = 1.2,
+                        width = 1.5,
                     },
                 },
             },
@@ -1127,6 +1127,7 @@ function addon:SetupOptions()
                             AssistedCombatIconFrame:ApplyOptions()
                         end,
                         order = 1,
+                        width = 1.2,
                     },
                     frame = {
                         type = "input",
@@ -1231,9 +1232,10 @@ function addon:SetupOptions()
         icon = addonIcon,
         OnClick = function(self, button, ...)
             if button and button == "RightButton" then
-                addon.DataBroker.label = DataBrokerLabel()
                 addon.db.profile.enabled = not addon.db.profile.enabled
                 AssistedCombatIconFrame:UpdateVisibility()
+
+                addon.DataBroker.label = DataBrokerLabel()
                 if AceConfigDialog.OpenFrames[addonName] then
                     AceConfigRegistry:NotifyChange(addonName)
                 end
@@ -1245,7 +1247,7 @@ function addon:SetupOptions()
             GameTooltip:SetOwner(frame, "ANCHOR_BOTTOMLEFT")
             GameTooltip:SetText(addonTitle)
             GameTooltip:AddLine(" ")
-            GameTooltip:AddLine("|cff4cc9f0Left Click|r: Open Config")
+            GameTooltip:AddLine("|cff4cc9f0 Left Click|r: Open Config")
             GameTooltip:AddLine("|cff4cc9f0Right Click|r: Enable/Disable")
             GameTooltip:Show()
         end,

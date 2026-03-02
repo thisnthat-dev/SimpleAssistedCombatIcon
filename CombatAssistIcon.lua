@@ -37,6 +37,7 @@ local ButtonsBySlot = {}
 local SlotByButton = {}
 
 local rotationalSpells = {}
+local playerClass = select(2,UnitClass("player"))
 
 local Colors = {
 	UNLOCKED = CreateColor(0, 1, 0, 1.0),
@@ -63,6 +64,14 @@ end
 
 local function IsRotationalSpell(spellID)
     return rotationalSpells[spellID] or false
+end
+
+local function IsMountedLocal()
+    if playerClass == "DRUID" then
+        return GetShapeshiftForm() == 3 or IsMounted()
+    else
+        return IsMounted()
+    end
 end
 
 local function GetSpellIDFromActionID(action)
@@ -145,6 +154,17 @@ end
 local function GetKeyBindForSpellID(spellID)
     if not IsValidSpellID(spellID) then return end
 
+    if ConsolePort and addon.db.profile.Keybind.ConsolePort then
+        slots = C_ActionBar.FindSpellActionButtons(spellID)
+        if slots then 
+            for _, slot in ipairs(slots) do
+                local bindingID = ConsolePort:GetActionBinding(slot)
+                local binding = ConsolePort:GetFormattedBindingOwner(bindingID)
+                if binding and binding ~= "" then return binding end
+            end
+        end
+    end
+
     local override = addon.db.profile.Keybind.overrides[spellID]
     if override then return override end
 
@@ -152,15 +172,6 @@ local function GetKeyBindForSpellID(spellID)
     if not buttons then return end
 
     for _,buttonName in ipairs(buttons) do
-        if ConsolePort and addon.db.profile.Keybind.ConsolePort then 
-            local button = _G[buttonName]
-            if button and button.action then 
-                local bindingID = ConsolePort:GetActionBinding(button.action)
-                local binding = ConsolePort:GetFormattedBindingOwner(bindingID)
-                if binding and binding ~= "" then return binding end
-            end
-        end
-
         local buttonAction = BindingByButton[buttonName]
         local text = GetBindingForAction(buttonAction)
         if not text and OverrideBindingByButton then 
@@ -694,7 +705,7 @@ function AssistedCombatIconMixin:UpdateVisibility()
             or (display.HideInVehicle and C_PetBattles.IsInBattle())
             or (display.HideInVehicle and UnitInVehicle("player"))
             or (display.HideAsHealer and UnitGroupRolesAssigned("player") == "HEALER")
-            or (display.HideOnMount and IsMounted())
+            or (display.HideOnMount and IsMountedLocal())
         then
             self:SetVisible(false)
         else
@@ -708,7 +719,7 @@ function AssistedCombatIconMixin:UpdateVisibility()
         local hide =   (display.HideInVehicle and UnitInVehicle("player"))
                     or (display.HideInVehicle and C_PetBattles.IsInBattle())
                     or (display.HideAsHealer and UnitGroupRolesAssigned("player") == "HEALER")
-                    or (display.HideOnMount and IsMounted())
+                    or (display.HideOnMount and IsMountedLocal())
 
         self:SetVisible(show and not hide
             and (db.position.parentFrame ~= "__nameplate" or nameplate))
